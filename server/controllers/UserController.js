@@ -1,54 +1,55 @@
-import { Webhook } from 'svix'
+import { Webhook } from 'svix';
 import userModel from '../models/userModal.js';
-// api controller function to manage clerk users
+
 const clerkWebhooks = async (req, res) => {
     try {
-        // create a svix instance with clerk webhook secret
-        const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET)
+        const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
+        
+        // Verify webhook
         await whook.verify(JSON.stringify(req.body), {
             "svix-id": req.headers["svix-id"],
             "svix-timestamp": req.headers["svix-timestamp"],
             "svix-signature": req.headers["svix-signature"]
-        })
+        });
+
         const { data, type } = req.body;
 
         switch (type) {
-            case "user.created": {
-                const userData = {
+            case "user.created":
+                const createdUserData = {
                     clerkId: data.id,
                     email: data.email_addresses[0].email_address,
                     firstName: data.first_name,
                     lastName: data.last_name,
                     photo: data.image_url
-                }
-                await userModel.create(userData);
-                res.json({});
-
+                };
+                await userModel.create(createdUserData);
+                res.status(201).json({ success: true });
                 break;
-            }
-            case "user.updated": {
-                const userData = {
+
+            case "user.updated":
+                const updatedUserData = {
                     email: data.email_addresses[0].email_address,
                     firstName: data.first_name,
                     lastName: data.last_name,
                     photo: data.image_url
-                }
-                await userModel.findOneAndUpdate({ clerkId: data.id }, userData);
-                res.json({});
-
+                };
+                await userModel.findOneAndUpdate({ clerkId: data.id }, updatedUserData);
+                res.status(200).json({ success: true });
                 break;
-            }
-            case "user.deleted": {
+
+            case "user.deleted":
                 await userModel.findOneAndDelete({ clerkId: data.id });
-                res.json({});
-
+                res.status(204).json({ success: true });
                 break;
-            }
+
+            default:
+                res.status(400).json({ success: false, message: "Invalid webhook type" });
         }
     } catch (error) {
-        console.log(error.message);
-        res.json({ success: false, message: error.message })
+        console.error("Error handling webhook:", error);
+        res.status(500).json({ success: false, message: error.message });
     }
 }
 
-export {clerkWebhooks}
+export { clerkWebhooks };
