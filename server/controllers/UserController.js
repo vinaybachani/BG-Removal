@@ -4,7 +4,7 @@ import userModel from '../models/userModal.js';
 const clerkWebhooks = async (req, res) => {
     try {
         const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
-        
+
         // Verify webhook
         await whook.verify(JSON.stringify(req.body), {
             "svix-id": req.headers["svix-id"],
@@ -54,4 +54,16 @@ const clerkWebhooks = async (req, res) => {
     }
 }
 
-export { clerkWebhooks };
+
+const userCredits = async (req, res) => {
+    try {
+        const { clerkId } = req.body;
+        const userData = await userModel.findOne({ clerkId });
+        res.json({ success: true, credits: userData.credit })
+    } catch (error) {
+        console.log(error.message);
+        res.json({ success: false, message: error.message })
+    }
+}
+
+export { clerkWebhooks, userCredits };
