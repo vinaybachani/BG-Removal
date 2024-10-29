@@ -15,7 +15,7 @@ const Result = () => {
                     </div>
                     {/* right image */}
                     <div className='flex flex-col'>
-                        <p className='font-semibold text-gray-600 mb-2'>Background Removes</p>
+                        <p className='font-semibold text-gray-600 mb-2'>Background Removed</p>
                         <div className='rounded-md border border-gray-300 h-full relative bg-layer overflow-hidden'>
                             <img src={resultImage ? resultImage : ''} />
                             {
